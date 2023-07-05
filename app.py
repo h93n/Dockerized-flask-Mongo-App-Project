@@ -7,6 +7,7 @@ from tmdbb import MoviePosterDownloader
 import requests
 from data_ip import MovieDatabase
 from flask import Flask, render_template, request
+import config
 from pymongo import MongoClient
 
 
@@ -14,18 +15,6 @@ from pymongo import MongoClient
 
 
 app = Flask(__name__)
-#
-# DOMAIN = 'mongodb'
-# PORT = 27017
-# client = MongoClient(
-#         host = [ str(DOMAIN) + ":" + str(PORT) ],
-#         serverSelectionTimeoutMS = 3000, # 3 second timeout
-#         username = "admin",
-#         password = "root",
-#     )
-#
-# db = client["movies"]
-# collection = db["movies"]
 
 @app.route('/')
 def index():
@@ -50,7 +39,7 @@ def search():
             return render_template('result1.html', image_url=image_url)
 
         else:
-           api_key = '0e627a7b49ba25e9ba89bc8d60514db4'
+           api_key =config.api_key
            downloader = MoviePosterDownloader(api_key)
            res1=downloader.add_to_mongo(query, movie_db)
 
