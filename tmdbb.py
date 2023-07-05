@@ -2,7 +2,7 @@ import requests
 import data_ip
 
 def add_to_mongo(movie_title):
-    api_key = 'd1a7c199362fdf0bc5aa9aa09ecb4e6c'
+
     #movie_title = 'it'  # The title of the movie you want the poster for
 
     # Make the API request to search for the movie
