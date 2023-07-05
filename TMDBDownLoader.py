@@ -1,5 +1,5 @@
 import requests
-from data_ip import MovieDatabase
+
 
 class MoviePosterDownloader:
     def __init__(self, api_key):

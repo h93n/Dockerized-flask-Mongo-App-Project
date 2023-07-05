@@ -1,11 +1,11 @@
 import base64
 #import add
 #import tmdbb
-import data_ip
-from tmdbb import MoviePosterDownloader
+import MongoDB
+from TMDBDownLoader import MoviePosterDownloader
 
 import requests
-from data_ip import MovieDatabase
+from MongoDB import MovieDatabase
 from flask import Flask, render_template, request
 import config
 from pymongo import MongoClient
