@@ -1,41 +1,51 @@
 import requests
-import data_ip
+from data_ip import MovieDatabase
 
-def add_to_mongo(movie_title):
+class MoviePosterDownloader:
+    def __init__(self, api_key):
+        self.api_key = api_key
 
-    #movie_title = 'it'  # The title of the movie you want the poster for
+    def search_movie(self, movie_title):
+        response = requests.get(f'https://api.themoviedb.org/3/search/movie?api_key={self.api_key}&query={movie_title}')
 
-    # Make the API request to search for the movie
-    response = requests.get(f'https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}')
+        if response.status_code == 200:
+            search_results = response.json()['results']
+            return search_results
+        else:
+            return []
 
-    if response.status_code == 200:
-        search_results = response.json()['results']
+    def download_poster(self, movie_id, poster_path):
+        poster_url = f'https://image.tmdb.org/t/p/original{poster_path}'
+        response = requests.get(poster_url)
+
+        if response.status_code == 200:
+            filename = f'{movie_id}.jpg'
+            with open(filename, 'wb') as f:
+                f.write(response.content)
+            return filename
+        else:
+            return None
+
+    def add_to_mongo(self, movie_title,movie_db):
+        search_results = self.search_movie(movie_title)
 
         if len(search_results) > 0:
-            # Get the first result
             first_result = search_results[0]
             poster_path = first_result['poster_path']
+            movie_id = first_result['id']
 
-            # Construct the URL for the poster image
-            poster_url = f'https://image.tmdb.org/t/p/original{poster_path}'
-            print(poster_url)
+            filename = self.download_poster(movie_id, poster_path)
 
-            # Download the poster image
-            response = requests.get(poster_url)
-
-            if response.status_code == 200:
-                with open(f'{first_result["id"]}.jpg', 'wb') as f:
-                    f.write(response.content)
-                    print(f'Poster image saved as {first_result["id"]}.jpg')
-                filename=str(first_result["id"]) + ".jpg"
-                data_ip.add_data(movie_title, filename, first_result["id"], poster_url)
-                return 1
+            if filename:
+                movie_db.add_data(movie_title, filename, movie_id, f'https://image.tmdb.org/t/p/original{poster_path}')
+                return True
             else:
                 print('Unable to download poster image')
-                return 0
         else:
             print('No search results found')
-            return 0
-    else:
-        print('Unable to search for movie')
-        return 0
+
+        return False
+
+# Usage example
+if __name__ == "__main__":
+    print("hi")

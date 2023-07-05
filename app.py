@@ -1,50 +1,31 @@
 import base64
 #import add
-import tmdbb
-import requests
+#import tmdbb
 import data_ip
+from tmdbb import MoviePosterDownloader
+
+import requests
+from data_ip import MovieDatabase
 from flask import Flask, render_template, request
 from pymongo import MongoClient
 
 
 
 
+
 app = Flask(__name__)
-# client = MongoClient('mongodb://localhost:27017/')
-# db = client['DB_NAME']
-# collection = db['mydb']
-
-# client = MongoClient('mongodb://localhost:27017/')
-#
-# # Select the database
-# db = client['victor']
-# collection = db['movie']
-
-
 #
 # DOMAIN = 'mongodb'
 # PORT = 27017
-# client = MongoClient()
-# client = MongoClient( "mongodb://localhost:27017/")
-#         # username = "admin",
-#         # password = "root",
-#     #)
-# db = client['victor']
-# collection = db['movie']
-# db = client['db_movie']
-# collection = db['movie']
-
-DOMAIN = 'mongodb'
-PORT = 27017
-client = MongoClient(
-        host = [ str(DOMAIN) + ":" + str(PORT) ],
-        serverSelectionTimeoutMS = 3000, # 3 second timeout
-        username = "admin",
-        password = "root",
-    )
-
-db = client["movies"]
-collection = db["movies"]
+# client = MongoClient(
+#         host = [ str(DOMAIN) + ":" + str(PORT) ],
+#         serverSelectionTimeoutMS = 3000, # 3 second timeout
+#         username = "admin",
+#         password = "root",
+#     )
+#
+# db = client["movies"]
+# collection = db["movies"]
 
 @app.route('/')
 def index():
@@ -55,18 +36,28 @@ def index():
 def search():
     if request.method == 'POST':
         query = request.form['query']
-        result = collection.find_one({'moviename': query})
+        DOMAIN = 'mongodb'
+        PORT = 27017
+        USERNAME = 'admin'
+        PASSWORD = 'root'
+        DB_NAME = 'movies'
+        COLLECTION_NAME = 'movies'
+
+        movie_db = MovieDatabase(DOMAIN, PORT, USERNAME, PASSWORD, DB_NAME, COLLECTION_NAME)
+        result = movie_db.search_in_mongo(query)
         if result:
-            #image_url ="http://image.tmdb.org/t/p/original/1Gu1IzSzlqvFuoVEfHqzQxRPOGi.jpg"
-            image_url = result['movieurl']
+            image_url=movie_db.search_to_get_posterURL(query)
             return render_template('result1.html', image_url=image_url)
+
         else:
-           #res=add.add_movie(query)
-           res1=tmdbb.add_to_mongo(query)
+           api_key = '0e627a7b49ba25e9ba89bc8d60514db4'
+           downloader = MoviePosterDownloader(api_key)
+           res1=downloader.add_to_mongo(query, movie_db)
+
            if(res1==1):
-                result = collection.find_one({'moviename': query})
-                image_url = result['movieurl']
+                image_url = movie_db.search_to_get_posterURL(query)
                 return render_template('result1.html', image_url=image_url)
+
            else:
             return render_template('not_found.html')
 
